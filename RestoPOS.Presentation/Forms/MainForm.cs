@@ -11,6 +11,7 @@ public partial class MainForm : Form
     private Panel pnlContent = null!;
     private Label lblTitle = null!;
     private Label lblUser = null!;
+    private Button btnToggle = null!;
     private Button btnTables = null!;
     private Button btnProducts = null!;
     private Button btnKitchen = null!;
@@ -18,6 +19,10 @@ public partial class MainForm : Form
     private Button btnAdmin = null!;
     private Button btnLogout = null!;
     private Form? currentChildForm;
+    
+    private bool isSidebarExpanded = true;
+    private const int SIDEBAR_EXPANDED_WIDTH = 200;
+    private const int SIDEBAR_COLLAPSED_WIDTH = 60;
 
     public MainForm()
     {
@@ -41,32 +46,48 @@ public partial class MainForm : Form
         pnlSidebar = new Panel
         {
             Dock = DockStyle.Left,
-            Width = 220,
+            Width = SIDEBAR_EXPANDED_WIDTH,
             BackColor = Color.FromArgb(25, 25, 35)
         };
+
+        // Toggle button (hamburger menu)
+        btnToggle = new Button
+        {
+            Text = "☰",
+            Font = new Font("Segoe UI", 16, FontStyle.Bold),
+            Size = new Size(50, 50),
+            Location = new Point(5, 5),
+            BackColor = Color.FromArgb(45, 45, 60),
+            ForeColor = Color.FromArgb(255, 165, 0),
+            FlatStyle = FlatStyle.Flat,
+            Cursor = Cursors.Hand
+        };
+        btnToggle.FlatAppearance.BorderSize = 0;
+        btnToggle.Click += BtnToggle_Click;
+        pnlSidebar.Controls.Add(btnToggle);
 
         // Title label
         lblTitle = new Label
         {
-            Text = "🍽️ RestoPOS",
-            Font = new Font("Segoe UI", 18, FontStyle.Bold),
+            Text = "RestoPOS",
+            Font = new Font("Segoe UI", 14, FontStyle.Bold),
             ForeColor = Color.FromArgb(255, 165, 0),
             AutoSize = false,
-            Size = new Size(220, 60),
-            Location = new Point(0, 15),
-            TextAlign = ContentAlignment.MiddleCenter
+            Size = new Size(130, 50),
+            Location = new Point(60, 5),
+            TextAlign = ContentAlignment.MiddleLeft
         };
         pnlSidebar.Controls.Add(lblTitle);
 
         // User info
         lblUser = new Label
         {
-            Text = $"👤 {Program.CurrentUser?.FullName ?? "Kullanıcı"}",
-            Font = new Font("Segoe UI", 10),
+            Text = Program.CurrentUser?.FullName ?? "Kullanıcı",
+            Font = new Font("Segoe UI", 9),
             ForeColor = Color.FromArgb(180, 180, 180),
             AutoSize = false,
-            Size = new Size(220, 30),
-            Location = new Point(0, 75),
+            Size = new Size(190, 20),
+            Location = new Point(5, 60),
             TextAlign = ContentAlignment.MiddleCenter
         };
         pnlSidebar.Controls.Add(lblUser);
@@ -74,28 +95,29 @@ public partial class MainForm : Form
         // Role label
         var lblRole = new Label
         {
+            Name = "lblRole",
             Text = GetRoleName(Program.CurrentUser?.Role ?? UserRole.Waiter),
-            Font = new Font("Segoe UI", 9),
+            Font = new Font("Segoe UI", 8),
             ForeColor = Color.FromArgb(255, 165, 0),
             AutoSize = false,
-            Size = new Size(220, 20),
-            Location = new Point(0, 100),
+            Size = new Size(190, 18),
+            Location = new Point(5, 80),
             TextAlign = ContentAlignment.MiddleCenter
         };
         pnlSidebar.Controls.Add(lblRole);
 
-        int btnY = 150;
-        int btnHeight = 50;
-        int btnMargin = 10;
+        int btnY = 110;
+        int btnHeight = 45;
+        int btnMargin = 8;
 
         // Tables button
-        btnTables = CreateMenuButton("🪑  Masalar", btnY);
+        btnTables = CreateMenuButton("Masalar", "🪑", btnY);
         btnTables.Click += (s, e) => LoadTableLayout();
         pnlSidebar.Controls.Add(btnTables);
         btnY += btnHeight + btnMargin;
 
         // Products button
-        btnProducts = CreateMenuButton("📦  Ürünler", btnY);
+        btnProducts = CreateMenuButton("Ürünler", "📦", btnY);
         btnProducts.Click += (s, e) => LoadProductManagement();
         pnlSidebar.Controls.Add(btnProducts);
         btnY += btnHeight + btnMargin;
@@ -103,7 +125,7 @@ public partial class MainForm : Form
         // Kitchen button (only for Kitchen and Admin)
         if (Program.CurrentUser?.Role == UserRole.Kitchen || Program.CurrentUser?.Role == UserRole.Admin)
         {
-            btnKitchen = CreateMenuButton("👨‍🍳  Mutfak", btnY);
+            btnKitchen = CreateMenuButton("Mutfak", "👨‍🍳", btnY);
             btnKitchen.Click += (s, e) => LoadKitchenDisplay();
             pnlSidebar.Controls.Add(btnKitchen);
             btnY += btnHeight + btnMargin;
@@ -112,7 +134,7 @@ public partial class MainForm : Form
         // Reports button (only for Cashier and Admin)
         if (Program.CurrentUser?.Role == UserRole.Cashier || Program.CurrentUser?.Role == UserRole.Admin)
         {
-            btnReports = CreateMenuButton("📊  Raporlar", btnY);
+            btnReports = CreateMenuButton("Raporlar", "📊", btnY);
             btnReports.Click += (s, e) => LoadReports();
             pnlSidebar.Controls.Add(btnReports);
             btnY += btnHeight + btnMargin;
@@ -121,15 +143,15 @@ public partial class MainForm : Form
         // Admin button (only for Admin)
         if (Program.CurrentUser?.Role == UserRole.Admin)
         {
-            btnAdmin = CreateMenuButton("⚙️  Yönetim", btnY);
+            btnAdmin = CreateMenuButton("Yönetim", "⚙️", btnY);
             btnAdmin.Click += (s, e) => LoadAdminPanel();
             pnlSidebar.Controls.Add(btnAdmin);
             btnY += btnHeight + btnMargin;
         }
 
         // Logout button
-        btnLogout = CreateMenuButton("🚪  Çıkış", 0);
-        btnLogout.BackColor = Color.FromArgb(180, 50, 50);
+        btnLogout = CreateMenuButton("Çıkış", "🚪", 0);
+        btnLogout.BackColor = Color.FromArgb(150, 50, 50);
         btnLogout.Dock = DockStyle.Bottom;
         btnLogout.Click += BtnLogout_Click;
         pnlSidebar.Controls.Add(btnLogout);
@@ -141,7 +163,7 @@ public partial class MainForm : Form
         {
             Dock = DockStyle.Fill,
             BackColor = Color.FromArgb(35, 35, 45),
-            Padding = new Padding(20)
+            Padding = new Padding(10)
         };
         this.Controls.Add(pnlContent);
 
@@ -151,25 +173,83 @@ public partial class MainForm : Form
         this.ResumeLayout(false);
     }
 
-    private Button CreateMenuButton(string text, int y)
+    private Button CreateMenuButton(string text, string icon, int y)
     {
         var btn = new Button
         {
-            Text = text,
-            Font = new Font("Segoe UI", 12),
-            Size = new Size(200, 50),
-            Location = new Point(10, y),
+            Text = $"{icon}  {text}",
+            Tag = new string[] { icon, text }, // Store icon and text separately
+            Font = new Font("Segoe UI", 11),
+            Size = new Size(190, 45),
+            Location = new Point(5, y),
             BackColor = Color.FromArgb(45, 45, 60),
             ForeColor = Color.White,
             FlatStyle = FlatStyle.Flat,
             Cursor = Cursors.Hand,
             TextAlign = ContentAlignment.MiddleLeft,
-            Padding = new Padding(15, 0, 0, 0)
+            Padding = new Padding(10, 0, 0, 0)
         };
         btn.FlatAppearance.BorderSize = 0;
         btn.MouseEnter += (s, e) => btn.BackColor = Color.FromArgb(60, 60, 80);
-        btn.MouseLeave += (s, e) => btn.BackColor = Color.FromArgb(45, 45, 60);
+        btn.MouseLeave += (s, e) => 
+        {
+            if (btn != btnLogout)
+                btn.BackColor = Color.FromArgb(45, 45, 60);
+            else
+                btn.BackColor = Color.FromArgb(150, 50, 50);
+        };
         return btn;
+    }
+
+    private void BtnToggle_Click(object? sender, EventArgs e)
+    {
+        isSidebarExpanded = !isSidebarExpanded;
+        
+        if (isSidebarExpanded)
+        {
+            // Expand
+            pnlSidebar.Width = SIDEBAR_EXPANDED_WIDTH;
+            lblTitle.Visible = true;
+            lblUser.Visible = true;
+            
+            // Show role label
+            var lblRole = pnlSidebar.Controls.Find("lblRole", false).FirstOrDefault();
+            if (lblRole != null) lblRole.Visible = true;
+            
+            // Update buttons to show text
+            foreach (Control ctrl in pnlSidebar.Controls)
+            {
+                if (ctrl is Button btn && btn.Tag is string[] parts && parts.Length == 2)
+                {
+                    btn.Text = $"{parts[0]}  {parts[1]}";
+                    btn.Size = new Size(190, 45);
+                    btn.TextAlign = ContentAlignment.MiddleLeft;
+                }
+            }
+        }
+        else
+        {
+            // Collapse
+            pnlSidebar.Width = SIDEBAR_COLLAPSED_WIDTH;
+            lblTitle.Visible = false;
+            lblUser.Visible = false;
+            
+            // Hide role label
+            var lblRole = pnlSidebar.Controls.Find("lblRole", false).FirstOrDefault();
+            if (lblRole != null) lblRole.Visible = false;
+            
+            // Update buttons to show only icons
+            foreach (Control ctrl in pnlSidebar.Controls)
+            {
+                if (ctrl is Button btn && btn.Tag is string[] parts && parts.Length == 2)
+                {
+                    btn.Text = parts[0];
+                    btn.Size = new Size(50, 45);
+                    btn.TextAlign = ContentAlignment.MiddleCenter;
+                    btn.Padding = new Padding(0);
+                }
+            }
+        }
     }
 
     private string GetRoleName(UserRole role) => role switch
@@ -184,9 +264,6 @@ public partial class MainForm : Form
     private void LoadTableLayout()
     {
         pnlContent.Controls.Clear();
-        var tableLayout = new TableLayoutPanel();
-        tableLayout.Dock = DockStyle.Fill;
-        
         var form = new TableLayoutForm();
         form.TopLevel = false;
         form.FormBorderStyle = FormBorderStyle.None;

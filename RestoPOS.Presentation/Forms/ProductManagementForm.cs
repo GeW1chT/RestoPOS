@@ -29,12 +29,11 @@ public partial class ProductManagementForm : Form
         // Title
         var lblTitle = new Label
         {
-            Text = "📦 Ürün Yönetimi",
+            Text = "Ürün Yönetimi",
             Font = new Font("Segoe UI", 20, FontStyle.Bold),
             ForeColor = Color.White,
-            AutoSize = false,
-            Size = new Size(300, 50),
-            Location = new Point(20, 10),
+            AutoSize = true,
+            Location = new Point(20, 15),
             TextAlign = ContentAlignment.MiddleLeft
         };
         this.Controls.Add(lblTitle);
@@ -121,17 +120,23 @@ public partial class ProductManagementForm : Form
         dgvProducts.Columns.Add("Id", "ID");
         dgvProducts.Columns["Id"].Visible = false;
         dgvProducts.Columns.Add("Name", "Ürün Adı");
-        dgvProducts.Columns["Name"].FillWeight = 30;
+        dgvProducts.Columns["Name"].FillWeight = 25;
+        dgvProducts.Columns["Name"].MinimumWidth = 150;
         dgvProducts.Columns.Add("Category", "Kategori");
-        dgvProducts.Columns["Category"].FillWeight = 20;
+        dgvProducts.Columns["Category"].FillWeight = 18;
+        dgvProducts.Columns["Category"].MinimumWidth = 100;
         dgvProducts.Columns.Add("Price", "Fiyat");
-        dgvProducts.Columns["Price"].FillWeight = 15;
+        dgvProducts.Columns["Price"].FillWeight = 12;
+        dgvProducts.Columns["Price"].MinimumWidth = 80;
         dgvProducts.Columns.Add("TaxRate", "KDV %");
         dgvProducts.Columns["TaxRate"].FillWeight = 10;
+        dgvProducts.Columns["TaxRate"].MinimumWidth = 60;
         dgvProducts.Columns.Add("Stock", "Stok");
         dgvProducts.Columns["Stock"].FillWeight = 10;
+        dgvProducts.Columns["Stock"].MinimumWidth = 60;
         dgvProducts.Columns.Add("Status", "Durum");
-        dgvProducts.Columns["Status"].FillWeight = 15;
+        dgvProducts.Columns["Status"].FillWeight = 12;
+        dgvProducts.Columns["Status"].MinimumWidth = 80;
 
         dgvProducts.DoubleClick += (s, e) => BtnEdit_Click(s, e);
 
